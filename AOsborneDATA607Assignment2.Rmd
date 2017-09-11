@@ -1,0 +1,21 @@
+---
+title: "Assignment 2, R and SQL"
+author: "Alejandro Osborne"
+date: "September 11, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r}
+library(RMySQL)
+critique <- dbConnect(RMySQL::MySQL(), user = 'root', password = 'celeborn', db = 'MovieRating', host = 'localhost', port =3306)
+dbListTables(critique)
+```
+
+```{r}
+library(ggplot2)
+movierating <- dbGetQuery(critique, "select moviename, adam, bert, chris, rhoda, di from movieratings")
+summary(movierating)
+ggplot(movierating)
+
+```
