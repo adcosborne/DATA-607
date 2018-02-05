@@ -1,0 +1,73 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+---
+title: "Assignment 1"
+author: "Alejandro Osborne"
+date: "February 4, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(RCurl)
+
+mushroomInfo <- read.csv(text=getURL("https://archive.ics.uci.edu/ml/machine-learning-databases/mushroom/agaricus-lepiota.data"), header=FALSE, sep = ",")
+
+#Took these attribute names from the archive page
+names(mushroomInfo)<- c('class','capshape','capsurface','capcolor','bruises','odor','gillattachment','gillspacing','gillsize','gillcolor','stalkshape','stalkroot','stalksurfaceabovering','stalksurfacebelowring','stalkcolorabovering','stalkcolorbelowring','veiltype','veilcolor','ringnumber','ringtype','sporeprintcolor','population','habitat')
+
+summary(mushroomInfo)
+
+sub.m_Info <- subset(mushroomInfo, select = c(class, ringtype, population, habitat))
+
+summary(sub.m_Info)
+
+#Changing variables for subsets
+
+sub.m_Info$class <- as.character(sub.m_Info$class)
+sub.m_Info$class[sub.m_Info$class == 'e'] <- 'Edible'
+sub.m_Info$class[sub.m_Info$class == 'p'] <- 'Poisonous'
+sub.m_Info$class <- as.factor(sub.m_Info$class)
+
+sub.m_Info$ringtype <- as.character(sub.m_Info$ringtype)
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'c'] <- 'Cobwebby'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'e'] <- 'Evanescent'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'f'] <- 'Flaring'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'l'] <- 'Large'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'n'] <- 'None'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'p'] <- 'Pendant'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 's'] <- 'Sheathing'
+sub.m_Info$ringtype[sub.m_Info$ringtype == 'z'] <- 'Zone'
+sub.m_Info$ringtype <- as.factor(sub.m_Info$ringtype)
+
+sub.m_Info$population <- as.character(sub.m_Info$population)
+sub.m_Info$population[sub.m_Info$population == 'a'] <- 'Abundant'
+sub.m_Info$population[sub.m_Info$population == 'c'] <- 'Clustered'
+sub.m_Info$population[sub.m_Info$population == 'n'] <- 'Numerous'
+sub.m_Info$population[sub.m_Info$population == 's'] <- 'Scattered'
+sub.m_Info$population[sub.m_Info$population == 'v'] <- 'Several'
+sub.m_Info$population[sub.m_Info$population == 'y'] <- 'Solitary'
+sub.m_Info$population <- as.factor(sub.m_Info$population)
+
+sub.m_Info$habitat <- as.character(sub.m_Info$habitat)
+sub.m_Info$habitat[sub.m_Info$habitat == 'g'] <- 'Grasses'
+sub.m_Info$habitat[sub.m_Info$habitat == 'l'] <- 'Leaves'
+sub.m_Info$habitat[sub.m_Info$habitat == 'm'] <- 'Meadows'
+sub.m_Info$habitat[sub.m_Info$habitat == 'p'] <- 'Paths'
+sub.m_Info$habitat[sub.m_Info$habitat == 'u'] <- 'Urban'
+sub.m_Info$habitat[sub.m_Info$habitat == 'w'] <- 'Waste'
+sub.m_Info$habitat[sub.m_Info$habitat == 'd'] <- 'Woods'
+sub.m_Info$habitat <- as.factor(sub.m_Info$habitat)
+
+summary(sub.m_Info)
+```
+
