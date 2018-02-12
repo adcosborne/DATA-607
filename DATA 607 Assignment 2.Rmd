@@ -1,0 +1,44 @@
+---
+title: "DATA 607 Assignment 2"
+author: "Alejandro Osborne"
+date: "February 10, 2018"
+output: pdf_document
+---
+#Loading the package needed and driver needed
+```{r}
+library(RMySQL)
+
+loadsql <- dbDriver("MySQL")
+```
+
+#Make sure connection between database and R environment
+```{r}
+newconnect = dbConnect(MySQL(), user='root', password='celeborn', dbname='movies', host='localhost')
+
+```
+
+#Query used to look at gathered data
+```{r}
+tabledisplay <- "SELECT * FROM movie"
+movie <- dbGetQuery(newconnect, tabledisplay)
+```
+
+
+```{r}
+dbDisconnect(newconnect)
+```
+
+```{r}
+Ratings <- data.frame(movie)
+Ratings
+```
+
+#Want to see which movie got the highest average rating (Small sample size used, this is better with more critics surveyed)
+```{r}
+library(ggplot2)
+ggplot(Ratings, aes(moviename,rating)) + 
+  geom_boxplot() + 
+  ylab("Rating") + theme(axis.text.x = element_text(angle = 60, hjust = 1))+ ggtitle("Highest Ratings for Movies")
+```
+
+## Spiderman and Black Panther were the highest rated movies amongst the 8 critics asked.
