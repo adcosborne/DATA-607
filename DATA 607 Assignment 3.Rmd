@@ -1,0 +1,131 @@
+---
+title: "DATA 607 Assignment 3"
+author: "Alejandro Osborne"
+date: "February 18, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r}
+library(stringi)
+library(stringr)
+library(knitr)
+```
+#Question 3
+```{r}
+#Copy the introductory example. The vector name Stores the exracted names
+
+raw.data <- "555-1239Moe Szyslak(636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5543642Dr. Julius Hibbert"
+
+#Extract step
+name <- unlist(str_extract_all(raw.data, "[[:alpha:]., ]{2,}"))
+name
+```
+
+##3.1 Use the tools of this chapter to rearrange the vector so that all elements conform to the standard first_name last_name.
+```{r}
+#Split step
+names<-str_split(name,"(\\,)")
+names
+```
+```{r}
+#reverse order step
+names <- str_replace_all(name, "(.+)(, .+)$", "\\2 \\1")
+names
+```
+```{r}
+#remove punctuation
+newname <- str_replace_all(names, ", ", "")
+newname
+```
+```{r}
+#no salutations
+
+finalnames <- str_replace_all(newname, "[A-Z][a-z]([a-z]?)\\.", "")
+finalnames
+```
+##3.2 Construct a logical vector indicating whether a character has a title (i.e Rev. and Dr.).
+
+```{r}
+NamesTable <- data.frame(newname)
+NamesTable$Title <- str_detect(newname, "[:alpha:]{2,}\\.")
+kable(NamesTable)
+```
+##3.3 Construct a logical vector indicating whether a character has a second name.
+
+```{r}
+NamesTable$SecondName <- str_detect(string = newname, pattern = "[A-Z]{1}\\.")
+kable(NamesTable)
+```
+
+#Question 4 - Describe the types of strings that conform to the following regular expressions and construct an example that is matched by the regular expression.  
+
+##4.1 [0-9]+\\$
+```{r}
+tester <- c("gjkaeilksx8582347$gdsfwsdlkj", "aerfvdlk$avvvvxcdln", "753$129", "4567", "$93sb")
+newtester <- unlist(str_extract_all(tester, pattern = "[0-9]+\\$" ))
+newtester
+```
+This expression will display up to nine digits and then the dollar sign, so long as they are in the respective order
+
+##4.2 \b[a-z]{1,4}\b
+```{r}
+testee <- c("bdb, sfhrr, wrwwrwf", "simpson homer jay", "bring all then 345", "year", "2589", "man")
+lasttestee <- str_extract_all(testee, pattern = "\\b[a-z]{1,4}\\b" )
+lasttestee
+```
+This will find/produce all the words that are 4 characters or less so long as they are all lowercase.
+
+##4.3 .*?\\.txt$
+```{r}
+testing <- c("amazon.txt", "allindata.txt  fasttimes.txt", "abdefkltxt", "teachme.txt", "txt", ".txt")
+firsttesting <- str_extract_all(testing, pattern = ".*?\\.txt$" )
+firsttesting
+```
+This will select anything that ends in ".txt"
+
+##4.4 \\d{2}/\\d{2}/\\d{4}
+```{r}
+testerson <- c("59/72/9101", "are rents high", "12/48/2554", "1/1/00", "WTF", "lol", "we/ar/star")
+testesterson <- str_extract_all(testerson, pattern = "\\d{2}/\\d{2}/\\d{4}")
+testesterson
+```
+
+Here we are looking for 2 digits followed by a forward slash and then 2 digits followed by another forward slash then 4 digits (i.e. MM/DD/YYYY format).
+
+##4.5 <(.+?)>.+?</\\1>
+
+This appears to be looking for corresponding comparison operators (HTML/XML tags). This one is harder to figure out than the others so we have to test for clarity:
+```{r}
+test <- c("<body> to </body>", "<head> is on fire not your </head>", "852/743 <div>", "<test/> captialized the same <test>", "old </cap>", "LOL")
+finaltest <- str_extract_all(test, pattern = "<(.+?)>.+?</\\1>")
+finaltest
+```
+So yes thise expression is definitely looking for the markup language style tags. As long as the beginning and ending tags are matched properly it will produce whatever is written in between.
+
+#Extra Credit - The Following Code hides a secret message . Crack it with R and regular expressions. Hint: Some of the characters are more reealing than others! The Code snippet is also available in the materials at www.r-datacollection.com.
+
+```{r}
+secret = "clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5 fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr"
+decoder = "[[:lower:].]+"
+str_replace_all(paste(unlist(str_extract_all(secret, decoder)),collapse=""),pattern="[\\.]+",replacement=" ")
+```
+This doesn't make sense, so lets try numbers:
+
+```{r}
+secret1 = "clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5 fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr"
+newdecoder = "[[:digit:].]+"
+str_replace_all(paste(unlist(str_extract_all(secret1, newdecoder)),collapse=""),pattern="[\\.]+",replacement=" ")
+```
+
+This is once again, jibberish. We now go to Capital letters:
+
+```{r}
+lastsecret = "clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5 fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr"
+finaldecoder = "[[:upper:].]+"
+str_replace_all(paste(unlist(str_extract_all(lastsecret, finaldecoder)),collapse=""),pattern="[\\.]+",replacement=" ")
+```
+
+Yay!
