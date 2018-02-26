@@ -1,0 +1,99 @@
+---
+title: "Project 1"
+author: "Alejandro Osborne"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+Project:  We???re given a text file with chess tournament results. Our
+job is to create an R Markdown file that generates a .CSV file with the following information for all of the players: 
+Player???s Name, Player???s State, Total Number of Points, Player???s Pre-Rating, and Average Pre Chess Rating of Opponents.
+```{r}
+library(stringi)
+library(stringr)
+library(ggplot2)
+library(DT)
+```
+
+##Loading and vectorizing Data
+```{r}
+raw <- "https://raw.githubusercontent.com/adcosborne/DATA-607/master/tournamentinfo.txt"
+newfile <- "tournamentinfo.txt"
+downloader::download(raw, newfile)
+dwnfle <- file(newfile, open = "r")
+tourney <- readLines(dwnfle, warn = FALSE)
+head(tourney, 10)
+```
+
+##We our data loaded and proceed with clean up using our RegExs
+```{r}
+dash<-str_detect(tourney,"\\-----")
+clean_tourney<-tourney[!dash]
+clean_tourney<-clean_tourney[3:length(clean_tourney)] #taking out header
+clean_tourney<-str_split(clean_tourney,"\\|")
+```
+```{r}
+tourney_raw<-str_extract_all(clean_tourney,"[[:alpha:]-?[:alpha:]  ?]{2,}") #looking for names
+tnames<-str_detect(unlist(tourney_raw),"[[:alpha:]]{3,}")
+allnames<-unlist(tourney_raw)[tnames]
+states<-str_detect(unlist(tourney_raw),"[[:alpha:]]{2}") #now we need the players state
+states<-unlist(tourney_raw)[(states)&(!tnames)]
+tot_pts<-str_extract_all(clean_tourney,"\\d{1,}+\\.?.?") #looking for the points a player has
+act_pts<-str_detect(unlist(tot_pts),"\\d\\.\\d")
+Points<-unlist(tot_pts)[act_pts]
+```
+
+##At this juncture we've extracted the  name, location and points scored data, however, we still need the pre and post ratings as well as the games played to calculate average opponent rating:
+```{r}
+plyrratings<-str_extract_all(clean_tourney,"(( \\:)|(\\>))?.?\\d{1,}P*\\.?")
+prerate<-str_detect(unlist(plyrratings),"\\b\\d{3,4}P?\\b")
+postrate<-post_loc<-str_detect(unlist(plyrratings),"\\>.?\\b\\d{3,4}P?\\b")
+prerate<-unlist(plyrratings)[(prerate)&(!postrate)]
+prerate<-str_replace_all(prerate,"P","")
+postrate<-unlist(plyrratings)[postrate]
+postrate<-str_replace_all(postrate,"([>P])","")
+head(prerate)
+head(postrate)
+```
+
+##This Gives use the ratings we wished to extract, now we need to pull the matches played by each player
+```{r}
+games<-str_extract_all(clean_tourney,"[WDL]...\\d{1,2}")
+gamesplayed<-str_extract_all(games,"\\.?\\d{1,2}")
+gamesplayed<-str_replace_all(gamesplayed,"\\b[0]\\b",".")
+gm_notplayed<-str_detect(gamesplayed,fixed("."))
+gamesplayed<-gamesplayed[!(gm_notplayed)]
+head(gamesplayed)
+```
+
+##Almost there, we need now to create the first part of the final data that will enter our new CSV file:
+```{r}
+PlayerID<-seq(1,64,by=1)
+Name<-str_trim(allnames,"both")
+Location<-str_trim(states,"both")
+PreRating<-str_trim(prerate,"both")
+PostRating<-str_trim(postrate,"both")
+NewRankingList<-cbind(PlayerID,Name,Location,Points,PreRating,PostRating)
+NewRankingList<-as.data.frame(NewRankingList)
+NewRankingList$Points<-as.numeric(as.character(NewRankingList$Points)) #converting to numbers
+NewRankingList$PreRating<-as.numeric(as.character(NewRankingList$PreRating)) #converting to numbers
+NewRankingList$PostRating<-as.numeric(as.character(NewRankingList$PostRating)) #converting to numbers
+head(NewRankingList)
+```
+##Finally We calculate the Opponents Average Rating (OAR)
+```{r}
+opp_avg<-array(0,dim=nrow(NewRankingList))
+for (i in 1:nrow(NewRankingList)){ 
+    wdl<-as.numeric(str_split(unlist(str_extract_all(gamesplayed[i],"\\d{1,2}"))," "))
+opp_avg[i]<-mean(NewRankingList[wdl,colnames(NewRankingList)=="PreRating"])};
+
+NewRankingList$OppAverageRank<-opp_avg
+head(NewRankingList)
+
+```
+
+```{r}
+write.csv(NewRankingList,"NewRankingList.csv",row.names=FALSE)
+```
+
