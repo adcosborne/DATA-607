@@ -1,0 +1,68 @@
+---
+title: "Assignment 5"
+author: "Alejandro Osborne"
+date: "March 3, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(RMySQL)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(tidyselect)
+library(ggplot2)
+library(stringr)
+library(zoo, warn.conflicts = FALSE)
+```
+
+##Establishing connection between R and Database
+```{r}
+loadsql <- dbDriver("MySQL")
+openlink = dbConnect(MySQL(), user='root', password ='celeborn', dbname='arrivals', host='localhost')
+```
+
+##Query to get Data
+```{r}
+AirportDataset<-"SELECT * FROM arrivals"
+arrivals <-dbGetQuery(openlink, AirportDataset)
+dbDisconnect(openlink)
+```
+##Loading Queried Data into data frame
+```{r}
+FlightData <- data.frame(arrivals)
+FlightData
+```
+##Initial data is missing labels for 2 rows, will fix with "zoo" Library
+
+```{r}
+FlightData$Airline[FlightData$Airline == ""] <- NA
+FlightData$Airline <- na.locf(FlightData$Airline, option="locf")
+FlightData <- FlightData
+FlightData
+```
+##Finally Tidying the data (Stacking)
+```{r}
+NewFlightData<-gather(FlightData, "City", "FlightCount", 3:7)
+tidied_up <- arrange(NewFlightData, FlightStatus)
+tidied_up
+```
+
+##Summary Statistics to give us a general overview of what the numbers can vaguely describe to us
+```{r}
+tidied_up %>% group_by(Airline) %>% filter(FlightStatus == "delayed") %>% summarise(mean = mean(FlightCount), min = min(FlightCount), max = max(FlightCount), median = median(FlightCount), stdev = sd(FlightCount), total = sum(FlightCount))
+```
+##We seek to find the last bit needed to reach a conclusion of any kind regarding this data. We create a field that describes the ratio of flights delayed/on time to the amount of flights scheduled. 
+
+```{r}
+NewTidied <- tidied_up %>% group_by(Airline, City) %>% arrange(Airline) %>% mutate(CityCounts = sum(FlightCount), NewRatio = FlightCount/CityCounts)
+NewTidied
+```
+##Finally we find The rations for the airlines in general (we only look at the Delayed flights) and we can see by a decent margin that AM West has more delayed flights than Alaska.
+```{r}
+NewTidied %>% group_by(Airline) %>% filter(FlightStatus == "delayed") %>% summarise(mean = mean(NewRatio), min = min(NewRatio), max = max(NewRatio), median = median(NewRatio), standard_deviation = sd(NewRatio))
+```
+
+
