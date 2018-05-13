@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<tech_books>
+   <book id="hb101">
+      <title>Hackers: Heroes of the Computer Revolution</title>
+	  <authors>Steven Levy</authors>
+      <genre>Technology</genre>
+	  <publisher>O'Reilly Media</publisher>
+	  <year>2001</year>
+	  <isbn>9780141000510</isbn>
+      <price>$18.15</price>    
+   </book>
+   <book id="hb102">
+      <title>DarkMarket</title>
+      <authors>Misha Glenny</authors>
+      <genre>Crime</genre>
+	  <publisher>Vintage</publisher>
+	  <year>2012</year>
+	  <isbn>9780307476449</isbn>
+      <price>$16.00</price>
+   </book>
+   <book id="hb103">
+      <title>Ghost in the Wires: My Adventures as the World's Most Wanted Hacker</title>
+      <authors>Kevin Mitnick,Steve Wozniak,William L. Simon</authors>
+      <genre>Biography</genre>
+	  <publisher>Little, Brown and Company</publisher>
+	  <year>2011</year>
+	  <isbn>‎9780316037723</isbn>
+	  <price>$14.45</price>
+   </book>
+</tech_books>
